@@ -74,7 +74,15 @@ class ModuleRepository implements ModuleInterface
     public function getOrScan(): array
     {
         $modules = [];
-        $manifests = $this->getFiles()->glob("{$this->getScanPaths()}/module.json");
+        $manifests = $this->fileSystem->glob("{$this->getScanPaths()}/module.json");
+
+        is_array($manifests) || $manifests = [];
+
+        foreach ($manifests as $manifest) {
+            $name = Json::make($manifest)->get('name');
+
+            $modules[$name] = $this->createModule($this->app, $name, dirname($manifest));
+        }
 
         return $modules;
     }
