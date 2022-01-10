@@ -11,7 +11,7 @@ declare(strict_types=1);
 namespace Mcow\LaravelModules\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
+use Mcow\LaravelModules\Commands\ModuleMakeCommand;
 
 /**
  * Class ConsoleServiceProvider
@@ -19,7 +19,13 @@ use Illuminate\Support\Str;
  */
 class ConsoleServiceProvider extends ServiceProvider
 {
-    protected $commands = [];
+    /**
+     * The available commands
+     * @var array
+     */
+    protected array $commands = [
+        ModuleMakeCommand::class,
+    ];
 
     /**
      * @return array
@@ -29,12 +35,15 @@ class ConsoleServiceProvider extends ServiceProvider
         $commands = [];
 
         foreach (config('modules.commands', $this->commands) as $command) {
-            $commands[] = [];
+            $commands[] = $command;
         }
 
         return $commands;
     }
 
+    /**
+     * @return void
+     */
     public function register(): void
     {
         $this->commands($this->resolveCommands());

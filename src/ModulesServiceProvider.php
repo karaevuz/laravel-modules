@@ -25,10 +25,30 @@ use Mcow\LaravelModules\Providers\ContractsServiceProvider;
 class ModulesServiceProvider extends ServiceProvider
 {
     /**
+     * Register package's namespaces.
+     *
+     * @return void
+     */
+    protected function registerNamespaces()
+    {
+        $configPath = __DIR__ . '/../config/config.php';
+
+        $this->mergeConfigFrom($configPath, 'modules');
+        $this->publishes([$configPath => config('modules.php')], 'config');
+    }
+
+    protected function registerModules()
+    {
+        $this->app->register(BootstrapServiceProvider::class);
+    }
+
+    /**
      * Booting the package.
      */
     public function boot()
     {
+        $this->registerNamespaces();
+        $this->registerModules();
     }
 
     /**
@@ -44,6 +64,8 @@ class ModulesServiceProvider extends ServiceProvider
     {
         /** @var ConfigRepository $configRepository */
         $configRepository = $this->app['config'];
+
+        // TODO Need optimize
     }
 
     /**
@@ -68,5 +90,15 @@ class ModulesServiceProvider extends ServiceProvider
         $this->registerProviders();
 
         $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'modules');
+    }
+
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
+    public function provides(): array
+    {
+        return [ModuleInterface::class, 'modules'];
     }
 }

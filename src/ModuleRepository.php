@@ -15,6 +15,9 @@ use Mcow\LaravelModules\Contracts\ModuleInterface;
 use Illuminate\Container\Container;
 use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Filesystem\Filesystem;
+use Mcow\LaravelModules\Extensions\McowJson;
+use Illuminate\Cache\CacheManager;
+use Illuminate\Support\Collection;
 
 /**
  * Class ModuleRepository
@@ -34,6 +37,9 @@ class ModuleRepository implements ModuleInterface
     /** @var Filesystem */
     private $fileSystem;
 
+    /** @var CacheManager */
+    private $cacheManager;
+
     /**
      * ModuleRepository constructor.
      * @param Container $app
@@ -45,6 +51,7 @@ class ModuleRepository implements ModuleInterface
 
         $this->path = $this->configRepository->get('modules.paths.modules');
         $this->fileSystem = $app['files'];
+        $this->cacheManager = $app['cache'];
     }
 
     /**
@@ -79,9 +86,41 @@ class ModuleRepository implements ModuleInterface
         is_array($manifests) || $manifests = [];
 
         foreach ($manifests as $manifest) {
-            $name = Json::make($manifest)->get('name');
+            $name = McowJson::make($manifest)->get('name');
 
             $modules[$name] = $this->createModule($this->app, $name, dirname($manifest));
+        }
+
+        return $modules;
+    }
+
+    /**
+     * Get cached modules.
+     *
+     * @return array
+     */
+    public function getCached(): array
+    {
+        $key = $this->configRepository->get('modules.cache.key');
+        $lifetime = $this->configRepository->get('modules.cache.lifetime');
+
+        return $this->cacheManager->remember($key, $lifetime, function () {
+            return (new Collection($this->getOrScan()))->toArray();
+        });
+    }
+
+    /**
+     * Format the cached data as array of modules.
+     *
+     * @param array $cached
+     * @return array
+     */
+    protected function formatCached(array $cached): array
+    {
+        $modules = [];
+
+        foreach ($cached as $name => $module) {
+            $modules[$name] = $this->createModule($this->app, $name, $module['path']);
         }
 
         return $modules;
@@ -97,6 +136,8 @@ class ModuleRepository implements ModuleInterface
         if (!$this->configRepository->get('modules.cache.enabled')) {
             return $this->getOrScan();
         }
+
+        return $this->formatCached($this->getCached());
     }
 
     /**
