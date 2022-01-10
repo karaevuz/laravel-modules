@@ -18,6 +18,7 @@ use Illuminate\Filesystem\Filesystem;
 use Mcow\LaravelModules\Extensions\McowJson;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Support\Collection;
+use RuntimeException;
 
 /**
  * Class ModuleRepository
@@ -149,5 +150,70 @@ class ModuleRepository implements ModuleInterface
     public function has(string $moduleName): bool
     {
         return array_key_exists($moduleName, $this->all());
+    }
+
+    /**
+     * @param string $moduleName
+     *
+     * @return Module|null
+     */
+    public function find(string $moduleName): ?Module
+    {
+        /** @var Module $module */
+        foreach ($this->all() as $module) {
+            if ($module->getLowerName() === strtolower($moduleName)) {
+                return $module;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string $moduleName
+     *
+     * @return Module
+     */
+    public function findOrFail(string $moduleName): Module
+    {
+        $module = $this->find($moduleName);
+
+        if (!is_null($module)) {
+            return $module;
+        }
+
+        throw new RuntimeException("Module [{$moduleName}] does not exist!");
+    }
+
+    /**
+     * @param string $moduleName
+     *
+     * @return bool
+     */
+    public function delete(string $moduleName): bool
+    {
+        return $this->findOrFail($moduleName)->delete();
+    }
+
+    /**
+     * @return void
+     */
+    public function boot(): void
+    {
+        /** @var Module $module */
+        foreach ($this->all() as $module) {
+            $module->boot();
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function register(): void
+    {
+        /** @var Module $module */
+        foreach ($this->all() as $module) {
+            $module->register();
+        }
     }
 }

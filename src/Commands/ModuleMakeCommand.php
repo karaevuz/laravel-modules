@@ -40,7 +40,9 @@ class ModuleMakeCommand extends Command
     public function handle()
     {
         foreach ($this->argument('name') as $moduleName) {
-            with(new ModuleGenerator($this->laravel, $moduleName))->generate();
+            with(new ModuleGenerator($this->laravel, $moduleName))
+                ->setForce($this->option('force'))
+                ->generate();
         }
     }
 

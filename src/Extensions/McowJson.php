@@ -88,12 +88,20 @@ class McowJson
     }
 
     /**
+     * @return Filesystem
+     */
+    public function getFileSystem(): Filesystem
+    {
+        return $this->fileSystem;
+    }
+
+    /**
      * Make new instance.
      *
      * @param string $path
-     * @return static
+     * @return McowJson
      */
-    public static function make(string $path): static
+    public static function make(string $path): McowJson
     {
         return new static($path);
     }
@@ -104,7 +112,7 @@ class McowJson
      * @param string $key
      * @return mixed
      */
-    public function get(string $key): mixed
+    public function get(string $key)
     {
         return $this->attributes->get($key);
     }

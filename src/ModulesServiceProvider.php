@@ -37,6 +37,9 @@ class ModulesServiceProvider extends ServiceProvider
         $this->publishes([$configPath => config('modules.php')], 'config');
     }
 
+    /**
+     * @return void
+     */
     protected function registerModules()
     {
         $this->app->register(BootstrapServiceProvider::class);
@@ -69,7 +72,7 @@ class ModulesServiceProvider extends ServiceProvider
     }
 
     /**
-     * {@inheritdoc}
+     * @return void
      */
     protected function registerServices()
     {
