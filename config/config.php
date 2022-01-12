@@ -31,8 +31,8 @@ return [
         ],
     ],
 
-    'tpl' => [
-        'path' => base_path() . '/vendor/mcow/laravel-modules/src/Commands/tpl',
+    'template' => [
+        'path' => base_path() . '/vendor/mcow/laravel-modules/src/Commands/template',
 
         'files' => [
             'config/config' => 'config/config.php',
@@ -55,4 +55,6 @@ return [
         'key'      => 'mcow-modules',
         'lifetime' => 60,
     ],
+
+    'commands' => [],
 ];
